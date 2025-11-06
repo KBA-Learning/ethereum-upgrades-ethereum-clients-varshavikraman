@@ -1,0 +1,56 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.30;
+
+import "./PersonContract.sol";
+
+contract Employee is Person {
+    address admin;
+
+    constructor() {
+        admin = msg.sender;
+    }
+
+    modifier adminOnly {
+        require(msg.sender == admin, "Unauthorised access");
+        _;
+    }
+
+    struct EmployeeDetails {
+        string name;
+        uint age;
+        string location;
+        uint empId;
+        string department;
+        uint salary;
+    }
+
+    mapping(uint => EmployeeDetails) employees;
+
+    function setEmployee(
+        string memory _name,
+        uint _age,
+        string memory _location,
+        uint _empId,
+        string memory _department,
+        uint _salary
+    ) public adminOnly {
+        require(employees[_empId].empId == 0, "Employee already exists");
+
+        setPerson(_name, _age, _location);
+
+        employees[_empId] = EmployeeDetails( _name,_age,_location,_empId,_department,_salary);
+    }
+
+    function getEmployee(uint _empId) public view returns(
+        string memory,
+        uint,
+        string memory,
+        uint,
+        string memory,
+        uint
+    ) {
+        require(employees[_empId].empId != 0, "Employee not found");
+        EmployeeDetails memory emp = employees[_empId];
+        return (emp.name, emp.age, emp.location, emp.empId, emp.department, emp.salary);
+    }
+}
