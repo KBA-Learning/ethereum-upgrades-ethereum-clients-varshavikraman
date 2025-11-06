@@ -1,0 +1,39 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.30;
+
+contract BankContract {
+    mapping (address => uint256) accountBalance;
+    
+    modifier balanceCheck(uint256 _amt) {
+        uint256 amountInWei = _amt * 1 ether;
+        require(accountBalance[msg.sender] >= amountInWei, "Insufficient Balance");
+        _;
+    }
+
+    function deposit() public payable {
+        accountBalance[msg.sender] += msg.value;
+    }
+
+    function withdraw(uint256 _amt) public balanceCheck(_amt){
+        uint256 withdrawAmount = _amt * 1 ether;
+
+        //require(accountBalance[msg.sender] >= withdrawAmount, "Insufficient Amount");
+
+        accountBalance[msg.sender] -= withdrawAmount;
+        payable(msg.sender).transfer(withdrawAmount); 
+    }
+
+    function transferTo(address _receiver, uint256 _amt) public balanceCheck(_amt){
+        uint256 sendAmount = _amt * 1 ether;
+        //require(accountBalance[msg.sender] >= sendAmount, "Insufficient Balance");
+
+        accountBalance[msg.sender] -= sendAmount;
+
+        payable(_receiver).transfer(sendAmount);
+    }
+
+    function checkBalance() public view returns(uint256) {
+        return accountBalance[msg.sender] / 1 ether;
+    }
+}
+

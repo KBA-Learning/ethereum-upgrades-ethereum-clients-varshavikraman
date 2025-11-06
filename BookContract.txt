@@ -1,0 +1,47 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.30;
+
+contract BookContract {
+    struct book{
+        string title;
+        string genre;
+        address owner;
+        bool status; 
+        uint256 price;
+    }
+
+    address admin;
+
+    mapping (uint256 => book) public bookDetails;
+
+    constructor() {
+        admin = msg.sender;
+    }
+
+    modifier adminOnly{
+        require(msg.sender == admin, "Unauthorized Access");
+        _;
+    }
+
+    function addBook(
+        uint256 _id,
+        string memory _title,
+        string memory _genre,
+        uint256 _price
+    ) public adminOnly {
+        uint256 priceInWei = _price * 1 ether;
+        bookDetails[_id] = book(_title, _genre, admin, true, priceInWei);
+    }
+
+    function buyBook(uint256 _id) public payable {
+        book storage BookItem = bookDetails[_id];
+
+        require(BookItem.status == true, "Book not available");
+        require(msg.value == BookItem.price, "Incorrect amount sent");
+
+        BookItem.owner = msg.sender;
+        BookItem.status = false;
+        payable(admin).transfer(msg.value);
+    }
+}
+
